@@ -1,3 +1,5 @@
+Purpose
+--------
 This is an ansible playbook for automatically applying CIS Security Benchmarks to a system running Red Hat Enterprise Linux 7.
 
 What are these benchmarks?
