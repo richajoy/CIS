@@ -1,0 +1,744 @@
+- name: "SCORED | 1.1.1.1 | HARDENING | Ensure mounting of cramfs filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install cramfs(\\s|$)"
+      line: "install cramfs /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.1
+      - cramfs
+
+- name: "SCORED | 1.1.1.2 | HARDENING | Ensure mounting of freevxfs filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install freevxfs(\\s|$)"
+      line: "install freevxfs /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.2
+      - freevxfs
+
+- name: "SCORED | 1.1.1.3 | HARDENING | Ensure mounting of jffs2 filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install jffs2(\\s|$)"
+      line: "install jffs2 /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.3
+      - jffs2
+
+- name: "SCORED | 1.1.1.4 | HARDENING | Ensure mounting of hfs filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install hfs(\\s|$)"
+      line: "install hfs /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.4
+      - hfs
+
+- name: "SCORED | 1.1.1.5 | HARDENING | Ensure mounting of hfsplus filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install hfsplus(\\s|$)"
+      line: "install hfsplus /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.5
+      - hfsplus
+
+- name: "SCORED | 1.1.1.6 | HARDENING | Ensure mounting of squashfs filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install squashfs(\\s|$)"
+      line: "install squashfs /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.6
+      - squashfs
+
+- name: "SCORED | 1.1.1.7 | HARDENING | Ensure mounting of udf filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install udf(\\s|$)"
+      line: "install udf /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.7
+      - udf
+
+- name: "SCORED | 1.1.1.8 | HARDENING | Ensure mounting of FAT filesystems is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install vfat(\\s|$)"
+      line: "install vfat /bin/true"
+      create: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.1.8
+      - vfat
+
+- name: "SCORED | 1.1.2 | HARDENING | Ensure separate partition exists for /tmp | enable and start/restart tmp.mount"
+  systemd:
+      name: tmp.mount
+      daemon_reload: yes
+      enabled: yes
+      masked: no
+      state: started
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.2
+
+- name: "SCORED | 1.1.3 | HARDENING | Ensure nodev option set on /tmp partition\n
+         SCORED | 1.1.4 | HARDENING | Ensure nosuid option set on /tmp partition\n
+         SCORED | 1.1.5 | HARDENING | Ensure noexec option set on /tmp partition\n
+         | drop custom tmp.mount"
+  copy:
+      src: etc/systemd/system/tmp.mount
+      dest: /etc/systemd/system/tmp.mount
+      owner: root
+      group: root
+      mode: 0644
+  notify: systemd restart tmp.mount
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.3
+      - rule_1.1.4
+      - rule_1.1.5
+
+- name: "SCORED | 1.1.6 | HARDENING | Ensure separate partition exists for /var"
+  shell: mount | grep "on /var "
+  register: var_mounted
+  changed_when: no
+  failed_when: no
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.6
+
+- name: "SCORED | 1.1.7 | HARDENING | Ensure separate partition exists for /var/tmp"
+  shell: mount | grep "on /var/tmp "
+  register: var_tmp_mounted
+  changed_when: no
+  failed_when: no
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.7
+
+- name: "SCORED | 1.1.8 | HARDENING | Ensure nodev option set on /var/tmp partition"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.8
+      - notimplemented
+
+- name: "SCORED | 1.1.9 | HARDENING | Ensure nosuid option set on /var/tmp partition"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.9
+      - notimplemented
+
+- name: "SCORED | 1.1.10 | HARDENING | Ensure noexec option set on /var/tmp partition"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.10
+      - notimplemented
+
+- name: "SCORED | 1.1.11 | HARDENING | Ensure separate partition exists for /var/log"
+  shell: mount | grep "on /var/log "
+  register: var_log_mounted
+  changed_when: no
+  failed_when: no
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.11
+
+- name: "SCORED | 1.1.12 | HARDENING | Ensure separate partition exists for /var/log/audit"
+  shell: mount | grep "on /var/log/audit "
+  register: var_log_audit_mounted
+  changed_when: no
+  failed_when: no
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.12
+
+- name: "SCORED | 1.1.13 | HARDENING | Ensure separate partition exists for /home"
+  shell: mount | grep "on /home "
+  register: home_mounted
+  changed_when: no
+  failed_when: no
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.1.13
+
+- name: "SCORED | 1.1.14 | HARDENING | Ensure nodev option set on /home partition"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.1.14
+      - notimplemented
+
+- name: "SCORED | 1.1.15 | HARDENING | Ensure nodev option set on /dev/shm partition\n
+         SCORED | 1.1.16 | HARDENING | Ensure nosuid option set on /dev/shm partition\n
+         SCORED | 1.1.17 | HARDENING | Ensure noexec option set on /dev/shm partition"
+  mount:
+      name: /dev/shm
+      src: tmpfs
+      state: mounted
+      fstype: tmpfs
+      opts: "defaults,nodev,nosuid,noexec"
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.1.15
+      - rule_1.1.16
+      - rule_1.1.17
+
+- name: "NOTSCORED | 1.1.18 | HARDENING | Ensure nodev option set on removable media partitions"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.1.18
+      - notimplemented
+
+- name: "NOTSCORED | 1.1.19 | HARDENING | Ensure nosuid option set on removable media partitions"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.1.19
+      - notimplemented
+
+- name: "NOTSCORED | 1.1.20 | HARDENING | Ensure noexec option set on removable media partitions"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.1.20
+      - notimplemented
+
+- name: "SCORED | 1.1.21 | HARDENING | Ensure sticky bit is set on all world-writable directories"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d -perm -0002 2>/dev/null | xargs chmod a+t
+  changed_when: no
+  failed_when: no
+  #when: sticky_bit_on_worldwritable_dirs_audit.rc == '0'
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.1.21
+
+- name: "SCORED | 1.1.22 | HARDENING | Disable Automounting"
+  service:
+      name: autofs
+      enabled: no
+  when: rhel7cis_allow_autofs == false and autofs_service_status.stdout == "loaded"
+  tags:
+      - level1
+      - patch
+      - rule_1.1.22
+
+- name: "NOTSCORED | 1.2.1 | HARDENING | Ensure package manager repositories are configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.2.1
+      - notimplemented
+
+- name: "SCORED | 1.2.2 | HARDENING | Ensure gpgcheck is globally activated"
+  replace:
+      name: /etc/yum.conf
+      regexp: "^gpgcheck=0"
+      replace: "gpgcheck=1"
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.2.2
+
+- name: "SCORED | 1.2.2 | HARDENING | Ensure gpgcheck is globally activated"
+  find:
+      paths: /etc/yum.repos.d
+      patterns: "*.repo"
+  register: yum_repos
+  changed_when: no
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.2.2
+
+- name: "SCORED | 1.2.2 | HARDENING | Ensure gpgcheck is globally activated"
+  replace:
+      name: "{{ item.path }}"
+      regexp: "^gpgcheck=0"
+      replace: "gpgcheck=1"
+  with_items:
+      - "{{ yum_repos.files }}"
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.2.2
+
+- name: "NOTSCORED | 1.2.3 | HARDENING | Ensure GPG keys are configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.2.3
+      - notimplemented
+
+- name: "NOTSCORED | 1.2.4 | HARDENING | Ensure Red Hat Network or Subscription Manager connection is configured"
+  command: /bin/true
+  changed_when: no
+  when: ansible_distribution == "RedHat"
+  tags:
+      - level1
+      - notscored
+      - patch
+      - rule_1.2.4
+      - notimplemented
+
+- name: "NOTSCORED | 1.2.5 | HARDENING | Disable the rhnsd Daemon"
+  service:
+      name: rhnsd
+      state: stopped
+      enabled: no
+  when: ansible_distribution == "RedHat" and rhnsd_service_status and not rhel7cis_rhnsd_required
+  tags:
+      - level2
+      - notscored
+      - patch
+      - rule_1.2.5
+
+- name: "SCORED | 1.3.1 | HARDENING | Ensure AIDE is installed"
+  yum:
+      name: aide
+      state: present
+  tags:
+      - level1
+      - scored
+      - aide
+      - patch
+      - rule_1.3.1
+
+- name: "SCORED | 1.3.1 | HARDENING | Ensure AIDE is installed"
+  command: /usr/sbin/aide --init -B 'database_out=file:/var/lib/aide/aide.db.gz'
+  args:
+      creates: /var/lib/aide/aide.db.gz
+  changed_when: no
+  failed_when: no
+  when: rhel7cis_config_aide
+  async: 45
+  poll: 0
+  tags:
+      - level1
+      - scored
+      - aide
+      - patch
+      - rule_1.3.1
+
+- name: "SCORED | 1.3.2 | HARDENING | Ensure filesystem integrity is regularly checked"
+  cron:
+      name: Run AIDE integrity check weekly
+      cron_file: "{{ rhel7cis_aide_cron['cron_file'] }}"
+      user: "{{ rhel7cis_aide_cron['cron_user'] }}"
+      minute: "{{ rhel7cis_aide_cron['aide_minute'] | default('0') }}"
+      hour: "{{ rhel7cis_aide_cron['aide_hour'] | default('5') }}"
+      day: "{{ rhel7cis_aide_cron['aide_day'] | default('*') }}"
+      month: "{{ rhel7cis_aide_cron['aide_month'] | default('*') }}"
+      weekday: "{{ rhel7cis_aide_cron['aide_weekday'] | default('*') }}"
+      job: "{{ rhel7cis_aide_cron['aide_job'] }}"
+  tags:
+      - level1
+      - scored
+      - aide
+      - file_integrity
+      - patch
+      - rule_1.3.2
+
+- name: "SCORED | 1.4.1 | HARDENING | Ensure permissions on bootloader config are configured"
+  stat:
+      path: /etc/grub2.cfg
+  register: grub_cfg
+  tags:
+      - level1
+      - scored
+      - grub
+      - patch
+      - rule_1.4.1
+
+- name: "SCORED | 1.4.1 | HARDENING | Ensure permissions on bootloader config are configured"
+  file:
+      path: "{{ grub_cfg.stat.lnk_source }}"
+      owner: root
+      group: root
+      mode: 0600
+  when: grub_cfg.stat.exists and grub_cfg.stat.islnk
+  tags:
+      - level1
+      - scored
+      - grub
+      - patch
+      - rule_1.4.1
+
+- name: "SCORED | 1.4.2 | HARDENING | Ensure bootloader password is set"
+  command: /bin/true
+  changed_when: no
+#  grub_crypt:
+#      password: "{{ rhel7cis_bootloader_password }}"
+#  register: grub_pass
+#  when: rhel7cis_set_boot_pass
+  tags:
+      - level1
+      - scored
+      - grub
+      - patch
+      - rule_1.4.2
+      - notimplemented
+
+- name: "SCORED | 1.4.2 | HARDENING | Ensure bootloader password is set"
+  command: /bin/true
+  changed_when: no
+#  copy:
+#      dest: /boot/grub2/user.cfg
+#      content: "GRUB2_PASSWORD={{ grub_pass.passhash }}"
+#  when: rhel7cis_set_boot_pass and grub_pass is defined and grub_pass.passhash is defined and grub_pass.passhash != ''
+#  notify: generate new grub config
+  tags:
+      - level1
+      - scored
+      - grub
+      - patch
+      - rule_1.4.2
+      - notimplemented
+
+- name: "NOTSCORED | 1.4.3 | HARDENING | Ensure authentication required for single user mode"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.4.3
+      - notimplemented
+
+- name: "NOTSCORED | 1.4.3 | HARDENING | Ensure authentication required for single user mode"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.4.3
+      - notimplemented
+
+- name: "SCORED | 1.5.1 | HARDENING | Ensure core dumps are restricted"
+  lineinfile:
+      state: present
+      dest: /etc/security/limits.conf
+      regexp: '^#?\\*.*core'
+      line: '*                hard    core            0'
+      insertbefore: '^# End of file'
+  tags:
+      - level1
+      - scored
+      - limits
+      - patch
+      - rule_1.5.1
+
+- name: "SCORED | 1.5.1 | HARDENING | Ensure core dumps are restricted"
+  sysctl:
+      name: fs.suid_dumpable
+      value: 0
+      state: present
+      reload: yes
+      sysctl_set: yes
+      ignoreerrors: yes
+  tags:
+      - level1
+      - scored
+      - sysctl
+      - patch
+      - rule_1.5.1
+
+- name: "NOTSCORED | 1.5.2 | HARDENING | Ensure XD/NX support is enabled"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.5.2
+      - notimplemented
+
+- name: "SCORED | 1.5.3 | HARDENING | Ensure address space layout randomization (ASLR) is enabled"
+  sysctl:
+      name: kernel.randomize_va_space
+      value: 2
+      state: present
+      reload: yes
+      sysctl_set: yes
+      ignoreerrors: yes
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.5.3
+
+- name: "SCORED | 1.5.4 | HARDENING | Ensure prelink is disabled"
+  command: prelink -ua
+  when: prelink_installed.rc == 0
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.5.4
+
+- name: "SCORED | 1.5.4 | HARDENING | Ensure prelink is disabled"
+  yum:
+    name: prelink
+    state: absent
+  tags:
+      - level1
+      - scored
+      - patch
+      - rule_1.5.4
+
+- name: "SCORED | 1.6.1.1 | HARDENING | Ensure SELinux is not disabled in bootloader configuration"
+  replace:
+      dest: /etc/default/grub
+      regexp: '(selinux|enforcing)\s*=\s*0\s*'
+      follow: yes
+  register: selinux_grub_patch
+  ignore_errors: yes
+  notify: generate new grub config
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.6.1.1
+
+- name: "SCORED | 1.6.1.2 | HARDENING | Ensure the SELinux state is enforcing"
+  selinux:
+      conf: /etc/selinux/config
+      policy: "{{ rhel7cis_selinux_pol }}"
+      state: enforcing
+  when: not rhel7cis_selinux_disable
+  tags:
+      - level2
+      - scored
+      - selinux
+      - patch
+      - rule_1.6.1.2
+
+- name: "SCORED | 1.6.1.3 | HARDENING | Ensure SELinux policy is configured"
+  selinux:
+      conf: /etc/selinux/config
+      policy: "{{ rhel7cis_selinux_pol }}"
+      state: enforcing
+  when: not rhel7cis_selinux_disable
+  tags:
+      - level2
+      - scored
+      - selinux
+      - patch
+      - rule_1.6.1.3
+
+- name: "SCORED | 1.6.1.4 | HARDENING | Ensure SETroubleshoot is not installed"
+  yum:
+      name: setroubleshoot
+      state: absent
+  tags:
+      - level2
+      - scored
+      - selinux
+      - patch
+      - rule_1.6.1.4
+
+- name: "SCORED | 1.6.1.5 | HARDENING | Ensure the MCS Translation Service (mcstrans) is not installed"
+  yum:
+      name: mcstrans
+      state: absent
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.6.1.5
+
+- name: "SCORED | 1.6.2 | HARDENING | Ensure SELinux is installed"
+  yum:
+      name: libselinux
+      state: present
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_1.6.2
+
+- name: "SCORED | 1.7.1.1 | HARDENING | Ensure message of the day is configured properly"
+  template:
+      src: etc/motd.j2
+      dest: /etc/motd
+  tags:
+      - level1
+      - banner
+      - patch
+      - rule_1.7.1.1
+
+- name: "NOTSCORED | 1.7.1.2 | HARDENING | Ensure local login warning banner is configured properly"
+  template:
+      src: etc/issue.j2
+      dest: /etc/issue
+  tags:
+      - level1
+      - patch
+      - rule_1.7.1.2
+
+- name: "NOTSCORED | 1.7.1.3 | HARDENING | Ensure remote login warning banner is configured properly"
+  template:
+      src: etc/issue.net.j2
+      dest: /etc/issue.net
+  tags:
+      - level1
+      - banner
+      - patch
+      - rule_1.7.1.3
+
+- name: "NOTSCORED | 1.7.1.4 | HARDENING | Ensure permissions on /etc/motd are configured"
+  file:
+      dest: /etc/motd
+      state: file
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+      - level1
+      - perms
+      - patch
+      - rule_1.7.1.4
+
+- name: "SCORED | 1.7.1.5 | HARDENING | Ensure permissions on /etc/issue are configured"
+  file:
+      dest: /etc/issue
+      state: file
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+      - level1
+      - perms
+      - patch
+      - rule_1.7.1.5
+
+- name: "NOTSCORED | 1.7.1.6 | HARDENING | Ensure permissions on /etc/issue.net are configured"
+  file:
+      dest: /etc/issue.net
+      state: file
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+      - level1
+      - perms
+      - patch
+      - rule_1.7.1.6
+
+- name: "SCORED | 1.7.2 | HARDENING | Ensure GDM login banner is configured"
+  lineinfile:
+      dest: "{{ item.file }}"
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+      create: yes
+      owner: root
+      group: root
+      mode: 0644
+  with_items:
+      - { file: '/etc/dconf/profile/gdm', regexp:  'user-db', line: 'user-db:user' }
+      - { file: '/etc/dconf/profile/gdm', regexp:  'system-db', line: 'system-db:gdm' }
+      - { file: '/etc/dconf/profile/gdm', regexp:  'file-db', line: 'file-db:/usr/share/gdm/greeter-dconf-defaults' }
+      - { file: '/etc/dconf/db/gdm.d/01-banner-message', regexp:  '\[org\/gnome\/login-screen\]', line: '[org/gnome/login-screen]' }
+      - { file: '/etc/dconf/db/gdm.d/01-banner-message', regexp:  'banner-message-enable', line: 'banner-message-enable=true' }
+      - { file: '/etc/dconf/db/gdm.d/01-banner-message', regexp:  'banner-message-text', line: "banner-message-text='{{ rhel7cis_warning_banner }}' " }
+  when: rhel7cis_gui
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.7.2
+
+- name: "NOTSCORED | 1.8 | HARDENING | Ensure updates, patches, and additional security software are installed"
+  yum:
+      name: "*"
+      state: latest
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_1.8

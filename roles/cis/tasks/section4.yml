@@ -1,0 +1,454 @@
+- name: "NOTSCORED | 4.1.1.1 | HARDENING | Ensure audit log storage size is configured"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^max_log_file"
+      line: "max_log_file = 10"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.1
+
+- name: "SCORED | 4.1.1.2 | HARDENING | Ensure system is disabled when audit logs are full"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^admin_space_left_action"
+      line: "admin_space_left_action = halt"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+
+- name: "SCORED | 4.1.1.3 | HARDENING | Ensure audit logs are not automatically deleted"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^max_log_file_action"
+      line: "max_log_file_action = keep_logs"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.3
+
+- name: "SCORED | 4.1.2 | HARDENING | Ensure auditd service is enabled"
+  service:
+      name: auditd
+      state: started
+      enabled: yes
+  when: rhel7cis_skip_for_travis == false
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.2
+
+- name: "SCORED | 4.1.3 | HARDENING | Ensure auditing for processes that start prior to auditd is enabled"
+  replace:
+      dest: /etc/default/grub
+      regexp: '(^GRUB_CMDLINE_LINUX\s*\=\s*)(?:")(.+)(?<!audit=1)(?:")'
+      replace: '\1"\2 audit=1"'
+      follow: yes
+  ignore_errors: yes
+  notify: generate new grub config
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+
+- name: "SCORED | 4.1.4 | HARDENING | Ensure events that modify date and time information are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change' }
+      - { line: '-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change' }
+      - { line: '-a always,exit -F arch=b64 -S clock_settime -k time-change' }
+      - { line: '-a always,exit -F arch=b32 -S clock_settime -k time-change' }
+      - { line: '-w /etc/localtime -p wa -k time-change' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.4
+
+- name: "SCORED | 4.1.5 | HARDENING | Ensure events that modify user/group information are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /etc/group -p wa -k identity' }
+      - { line: '-w /etc/passwd -p wa -k identity' }
+      - { line: '-w /etc/gshadow -p wa -k identity' }
+      - { line: '-w /etc/shadow -p wa -k identity' }
+      - { line: '-w /etc/security/opasswd -p wa -k identity' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.5
+
+- name: "SCORED | 4.1.6 | HARDENING | Ensure events that modify the system's network environment are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale' }
+      - { line: '-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale' }
+      - { line: '-w /etc/issue -p wa -k system-locale' }
+      - { line: '-w /etc/issue.net -p wa -k system-locale' }
+      - { line: '-w /etc/hosts -p wa -k system-locale' }
+      - { line: '-w /etc/sysconfig/network -p wa -k system-locale' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.6
+
+- name: "SCORED | 4.1.7 | HARDENING | Ensure events that modify the system's Mandatory Access Controls are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /etc/selinux/ -p wa -k MAC-policy' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.7
+
+- name: "SCORED | 4.1.8 | HARDENING | Ensure login and logout events are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /var/log/lastlog -p wa -k logins' }
+      - { line: '-w /var/run/faillock/ -p wa -k logins' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.8
+
+- name: "SCORED | 4.1.9 | HARDENING | Ensure session initiation information is collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /var/run/utmp -p wa -k session' }
+      - { line: '-w /var/log/wtmp -p wa -k session' }
+      - { line: '-w /var/log/btmp -p wa -k session' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.9
+
+- name: "SCORED | 4.1.10 | HARDENING | Ensure discretionary access control permission modification events are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+      - { line: '-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+      - { line: '-a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+      - { line: '-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+      - { line: '-a always,exit -F arch=b64 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+      - { line: '-a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.10
+
+- name: "SCORED | 4.1.11 | HARDENING | Ensure unsuccessful unauthorized file access attempts are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access' }
+      - { line: '-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access' }
+      - { line: '-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access' }
+      - { line: '-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.11
+
+- name: "SCORED | 4.1.12 | HARDENING | Ensure use of privileged commands is collected"
+  shell: find / -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged" }' 
+  register: priv_cmds_audit
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+
+- name: "SCORED | 4.1.12 | HARDENING | Ensure use of privileged commands is collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item }}"
+      state: present
+  with_items:
+      - "{{ priv_cmds_audit.stdout_lines }}"
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+
+- name: "SCORED | 4.1.13 | HARDENING | Ensure successful file system mounts are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "-a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+
+- name: "SCORED | 4.1.13 | HARDENING | Ensure successful file system mounts are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "-a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+
+- name: "SCORED | 4.1.13 | HARDENING | Ensure successful file system mounts are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "-a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts"
+      state: present
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+
+- name: "SCORED | 4.1.14 | HARDENING | Ensure file deletion events by users are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete' }
+      - { line: '-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete' } 
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.14
+
+- name: "SCORED | 4.1.15 | HARDENING | Ensure changes to system administration scope (sudoers) is collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /etc/sudoers -p wa -k scope' }
+      - { line: '-w /etc/sudoers.d -p wa -k scope' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.15
+
+- name: "SCORED | 4.1.16 | HARDENING | Ensure system administrator actions (sudolog) are collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /var/log/sudo.log -p wa -k actions' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.16
+
+- name: "SCORED | 4.1.17 | HARDENING | Ensure kernel module loading and unloading is collected"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-w /sbin/insmod -p x -k modules' }
+      - { line: '-w /sbin/rmmod -p x -k modules' }
+      - { line: '-w /sbin/modprobe -p x -k modules' }
+      - { line: '-a always,exit arch=b64 -S init_module -S delete_module -k modules' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.17
+
+- name: "SCORED | 4.1.18 | HARDENING | Ensure the audit configuration is immutable"
+  lineinfile:
+      dest: /etc/audit/audit.rules
+      line: "{{ item.line }}"
+      state: present
+  with_items:
+      - { line: '-e 2' }
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.18
+
+- name: "SCORED | 4.2.3 | HARDENING | Ensure rsyslog or syslog-ng is installed"
+  yum:
+      name: "{{ rhel7cis_syslog }}"
+      state: present
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.3
+
+- name: "SCORED | 4.2.1.1 | HARDENING | Ensure rsyslog Service is enabled"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.1
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.1.2 | HARDENING | Ensure logging is configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.2
+      - notimplemented
+
+- name: "SCORED | 4.2.1.3 | HARDENING | Ensure rsyslog default file permissions configured"
+  lineinfile:
+      dest: /etc/rsyslog.conf
+      regexp: '^$FileCreateMode'
+      line: '$FileCreateMode 0640'
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.3
+
+- name: "SCORED | 4.2.1.4 | HARDENING | Ensure rsyslog is configured to send logs to a remote log host"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.4
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.1.5 | HARDENING | Ensure remote rsyslog messages are only accepted on designated log hosts."
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.5
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.1.5 | HARDENING | Ensure remote rsyslog messages are only accepted on designated log hosts."
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.1.5
+      - notimplemented
+
+- name: "SCORED | 4.2.2.1 | HARDENING | Ensure syslog-ng service is enabled"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.2.1
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.2.2 | HARDENING | Ensure logging is configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.2.2
+      - notimplemented
+
+- name: "SCORED | 4.2.2.3 | HARDENING | Ensure syslog-ng default file permissions configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.2.3
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.2.4 | HARDENING | Ensure syslog-ng is configured to send logs to a remote log host"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.2.4
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.2.5 | HARDENING | Ensure remote syslog-ng messages are only accepted on designated log hosts"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.2.5
+      - notimplemented
+
+- name: "SCORED | 4.2.4 | HARDENING | Ensure permissions on all logfiles are configured"
+  command: find /var/log -type f -exec chmod g-wx,o-rwx {} +
+  changed_when: no
+  failed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.2.4
+
+- name: "NOTSCORED | 4.3 | HARDENING | Ensure logrotate is configured"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.3

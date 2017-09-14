@@ -1,0 +1,13 @@
+---
+#PURPOSE: This is an ansible playbook for automatically applying CIS Security Benchmarks to a system running Red Hat Enterprise Linux 7
+#Based on CIS RedHat Enterprise Linux 7 Benchmark v2.1.1 
+- hosts: sandbox
+  become_method: sudo
+  become_user: root
+  become: True
+
+  environment:
+    PATH: '/usr/sbin:/sbin:/usr/bin:/bin'
+
+  roles:
+    - cis
